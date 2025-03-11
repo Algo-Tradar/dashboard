@@ -140,54 +140,54 @@ def parse_email_data(service, msg_data):
     if email_date.date() != datetime.now().date():
         return None
 
+    # Determine the cryptocurrency from the subject
+    if "BTC Indicators Updates" in subject:
+        crypto = "BTCUSDT"
+    elif "ETH Indicators Updates" in subject:
+        crypto = "ETHUSDT"
+    elif "SOL Indicators Updates" in subject:
+        crypto = "SOLUSDT"
+    else:
+        return None
+
     # Only process TradingView alerts with "Indicators Updates"
-    if "TradingView" in from_address and "Alert:" in subject:
+    if "TradingView" in from_address and "Indicators Updates" in subject:
         content = get_email_content(service, msg_data['id'])
         if "Indicators Updates" in content:
-            return content
+            return crypto, content
     return None
 
 def get_alerts():
     try:
-        # Get valid credentials
         creds = get_credentials()
         if not creds:
             print("Failed to obtain valid credentials")
-            return ""
+            return None
 
-        # Build Gmail API service
         service = build('gmail', 'v1', credentials=creds)
-
-        # Calculate timestamp for 24 hours ago
-        one_day_ago = int((datetime.now() - timedelta(days=1)).timestamp())
-        
-        # Create Gmail query for emails from the past day
-        query = f"in:inbox after:{one_day_ago}"
-
-        # Get recent emails
+        four_hours_ago = int((datetime.now() - timedelta(hours=4)).timestamp())
+        query = f"in:inbox after:{four_hours_ago}"
         results = service.users().messages().list(userId='me', q=query).execute()
         messages = results.get('messages', [])
 
         if not messages:
-            return ""
-        
-        # Process each email and sort by date
-        all_alerts = []
+            return None
+
+        all_alerts = {}
         for msg in messages:
             msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
-            content = parse_email_data(service, msg_data)
-            if content:  # Only append if it's a TradingView alert
-                all_alerts.append((msg_data['internalDate'], content))
+            parsed_data = parse_email_data(service, msg_data)
+            if parsed_data:
+                crypto, content = parsed_data
+                indicators = extract_indicators(content)
+                if indicators:
+                    all_alerts[crypto] = indicators
 
-        # Sort alerts by date and get the latest one
-        if all_alerts:
-            latest_alert = max(all_alerts, key=lambda x: x[0])[1]
-            return "📢 *TradingView Alert*\n\n" + latest_alert
-        return ""
+        return all_alerts if all_alerts else None
 
     except Exception as e:
         print(f"Error reading Gmail: {str(e)}")
-        return ""
+        return None
 
 def extract_indicators(content):
     """Extract indicator values from email content."""
@@ -195,11 +195,11 @@ def extract_indicators(content):
     indicators = {}
     for line in lines:
         if "Knn Moving Average:" in line:
-            indicators['Knn Moving Average'] = line.split(":")[1].strip()
+            indicators['knnMovingAverage'] = line.split(":")[1].strip()
         elif "Keltner Channels:" in line:
-            indicators['Keltner Channels'] = line.split(":")[1].strip()
+            indicators['keltnerChannels'] = line.split(":")[1].strip()
         elif "AI Trend Navigator:" in line:
-            indicators['AI Trend Navigator'] = line.split(":")[1].strip()
+            indicators['aiTrendNavigator'] = line.split(":")[1].strip()
     return indicators
 
 def update_api_data(new_data):
@@ -216,7 +216,4 @@ def update_api_data(new_data):
 if __name__ == "__main__":
     alerts = get_alerts()
     if alerts:
-        print(alerts)
-        indicators = extract_indicators(alerts)
-        if indicators:
-            update_api_data(indicators)
+        update_api_data(alerts)

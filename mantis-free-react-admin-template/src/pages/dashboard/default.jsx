@@ -190,7 +190,7 @@ export default function DashboardDefault() {
         <MainCard sx={{ mt: 2 }} content={false}>
           <List sx={{ p: 0, '& .MuiListItemButton-root': { py: 2 } }}>
             <ListItemButton divider>
-              <ListItemText primary="UTGL Index" />
+              <ListItemText primary="AlgoTradar Index" />
               <Typography variant="h5">56%</Typography>
             </ListItemButton>
             <ListItemButton divider>

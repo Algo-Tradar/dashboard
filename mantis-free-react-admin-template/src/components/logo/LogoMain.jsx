@@ -1,6 +1,6 @@
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import logo from 'assets/UTGL.svg'; // Ensure this path is correct
+import logo from 'assets/Algo.svg'; // Ensure this path is correct
 
 /**
  * if you want to use image instead of <svg> uncomment following.

@@ -180,12 +180,18 @@ export default function IndicatorTable() {
         const indicatorsResponse = await fetch('http://127.0.0.1:5000/api/indicators');
         if (!indicatorsResponse.ok) throw new Error('Failed to fetch indicators');
         const indicatorsData = await indicatorsResponse.json();
-        setKnnMovingAverage(indicatorsData['Knn Moving Average']);
-        setKeltnerChannels(indicatorsData['Keltner Channels']);
-        setAiTrendNavigator(indicatorsData['AI Trend Navigator']);
-        console.log('Knn Moving Average:', indicatorsData['Knn Moving Average']);
-        console.log('Keltner Channels:', indicatorsData['Keltner Channels']);
-        console.log('AI Trend Navigator:', indicatorsData['AI Trend Navigator']);
+
+        // Access data for the selected cryptocurrency
+        const selectedIndicators = indicatorsData[selectedCrypto] || {};
+
+        // Set state with the selected cryptocurrency's data
+        setKnnMovingAverage(selectedIndicators.knnMovingAverage || 'N/A');
+        setKeltnerChannels(selectedIndicators.keltnerChannels || 'N/A');
+        setAiTrendNavigator(selectedIndicators.aiTrendNavigator || 'N/A');
+
+        console.log('Knn Moving Average:', selectedIndicators.knnMovingAverage);
+        console.log('Keltner Channels:', selectedIndicators.keltnerChannels);
+        console.log('AI Trend Navigator:', selectedIndicators.aiTrendNavigator);
 
         // Fetch Fear & Greed Index
         const fearGreedResponse = await fetch('https://api.alternative.me/fng/?limit=1&format=json');
@@ -218,13 +224,13 @@ export default function IndicatorTable() {
   }, [selectedCrypto]);
 
   // Determine status for KNN Moving Average
-  const knnStatus = knnMovingAverage === 'Below' ? 2 : 1;
+  const knnStatus = knnMovingAverage === 'Above' ? 1 : 0;
 
   // Determine status for Keltner Channels
-  const keltnerStatus = keltnerChannels === 'Lower' ? 1 : keltnerChannels === 'Upper' ? 2 : 0;
+  const keltnerStatus = keltnerChannels === 'Upper' ? 1 : keltnerChannels === 'Middle' ? 0 : 2;
 
   // Determine status for AI Trend Navigator
-  const aiTrendStatus = aiTrendNavigator === 'Red' ? 2 : aiTrendNavigator === 'Green' ? 1 : 0;
+  const aiTrendStatus = aiTrendNavigator === 'Green' ? 1 : 2;
 
   // Define the rows for the table
   const rows = [

@@ -12,7 +12,7 @@ import MobileSection from './MobileSection';
 
 // project import
 import { GithubOutlined } from '@ant-design/icons';
-import Logo from 'assets/UTGL.svg';
+import Logo from 'assets/Algo.svg';
 
 // ==============================|| HEADER - CONTENT ||============================== //
 

@@ -64,7 +64,7 @@ yarn run start
 - Mantis Free 
     - [Live Preview](https://mantisdashboard.io/free/) 
     - [Download](https://codedthemes.com/item/mantis-free-mui-admin-template/)
-- utgl Pro
+- AlgoTradar Pro
     - [Live Preview](https://mantisdashboard.io/) 
     - [Download](https://codedthemes.com/item/mantis-mui-react-dashboard-template/)
       
