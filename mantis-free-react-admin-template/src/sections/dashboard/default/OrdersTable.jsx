@@ -252,7 +252,7 @@ export default function IndicatorTable() {
     ),
     createData(
       <Link href="https://example.com/knn-moving-average" target="_blank" rel="noopener noreferrer" color="secondary">
-        Knn Moving Average
+        Knn Classifier Line
       </Link>,
       'Above/Below',
       knnMovingAverage,

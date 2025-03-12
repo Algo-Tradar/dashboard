@@ -81,6 +81,7 @@ def get_credentials():
             try:
                 creds.refresh(Request())
                 update_env_with_token(creds.to_json())
+                print("Token refreshed successfully")
             except Exception as e:
                 print(f"Error refreshing token: {e}")
                 creds = None
@@ -123,15 +124,12 @@ def parse_email_data(service, msg_data):
     headers = msg_data.get('payload', {}).get('headers', [])
     
     from_address = ""
-    subject = ""
     date = ""
 
     for header in headers:
         name = header.get('name', '').lower()
         if name == 'from':
             from_address = header.get('value', '')
-        elif name == 'subject':
-            subject = header.get('value', '')
         elif name == 'date':
             date = header.get('value', '')
 
@@ -140,21 +138,23 @@ def parse_email_data(service, msg_data):
     if email_date.date() != datetime.now().date():
         return None
 
-    # Determine the cryptocurrency from the subject
-    if "BTC Indicators Updates" in subject:
+    # Get the email content
+    content = get_email_content(service, msg_data['id'])
+    print(f"Email content: {content}")
+
+    # Determine the cryptocurrency from the content
+    if "BTCUSD indicators update" in content:
         crypto = "BTCUSDT"
-    elif "ETH Indicators Updates" in subject:
+    elif "ETHUSDT indicators update" in content:
         crypto = "ETHUSDT"
-    elif "SOL Indicators Updates" in subject:
+    elif "SOLUSDT indicators update" in content:
         crypto = "SOLUSDT"
     else:
         return None
 
     # Only process TradingView alerts with "Indicators Updates"
-    if "TradingView" in from_address and "Indicators Updates" in subject:
-        content = get_email_content(service, msg_data['id'])
-        if "Indicators Updates" in content:
-            return crypto, content
+    if "TradingView" in from_address and "indicators update" in content:
+        return crypto, content
     return None
 
 def get_alerts():
@@ -171,6 +171,7 @@ def get_alerts():
         messages = results.get('messages', [])
 
         if not messages:
+            print("No messages found")
             return None
 
         all_alerts = {}
@@ -182,6 +183,7 @@ def get_alerts():
                 indicators = extract_indicators(content)
                 if indicators:
                     all_alerts[crypto] = indicators
+                    print(f"Found indicators for {crypto}: {indicators}")
 
         return all_alerts if all_alerts else None
 
@@ -205,6 +207,7 @@ def extract_indicators(content):
 def update_api_data(new_data):
     """Update the API data with new indicator values."""
     try:
+        print(f"Updating API with data: {new_data}")
         response = requests.post('http://127.0.0.1:5000/api/update_indicators', json=new_data)
         if response.ok:
             print("API data updated:", response.json())
@@ -217,3 +220,5 @@ if __name__ == "__main__":
     alerts = get_alerts()
     if alerts:
         update_api_data(alerts)
+    else:
+        print("No alerts to update")
