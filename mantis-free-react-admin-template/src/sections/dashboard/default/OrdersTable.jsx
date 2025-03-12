@@ -177,7 +177,7 @@ export default function IndicatorTable() {
         setFundingRateStatus(fundingStatus);
 
         // Fetch data from Flask API
-        const indicatorsResponse = await fetch('http://127.0.0.1:5000/api/indicators');
+        const indicatorsResponse = await fetch('http://192.168.10.177:5002/api/indicators');
         if (!indicatorsResponse.ok) throw new Error('Failed to fetch indicators');
         const indicatorsData = await indicatorsResponse.json();
 

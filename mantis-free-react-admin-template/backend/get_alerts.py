@@ -208,7 +208,7 @@ def update_api_data(new_data):
     """Update the API data with new indicator values."""
     try:
         print(f"Updating API with data: {new_data}")
-        response = requests.post('http://127.0.0.1:5000/api/update_indicators', json=new_data)
+        response = requests.post('http://192.168.10.177:5002/api/update_indicators', json=new_data)
         if response.ok:
             print("API data updated:", response.json())
         else:
