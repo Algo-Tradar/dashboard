@@ -106,6 +106,8 @@ export default function IndicatorTable() {
   const [aiTrendNavigator, setAiTrendNavigator] = useState('Loading...');
   const [fearGreedValue, setFearGreedValue] = useState('Loading...');
   const [fearGreedStatus, setFearGreedStatus] = useState(0);
+  const [miningCostValue, setMiningCostValue] = useState('Loading...');
+  const [miningCostStatus, setMiningCostStatus] = useState(0);
   const previousSmaStatus = useRef(null);
   const order = 'asc';
   const orderBy = 'tracking_no';
@@ -202,6 +204,7 @@ export default function IndicatorTable() {
         console.log('Fear & Greed Index:', fearGreedValue, fearGreedGrade);
 
 
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setSmaValue('Error');
@@ -281,7 +284,6 @@ export default function IndicatorTable() {
       fearGreedValue,
       fearGreedStatus
     ),
-    createData('Onchain', '100+ Holder', '-10000', 2, 40570),
     createData("Rainbow Price Chart", 'High/Low', 'High', 0, 180139),
     createData('Mining Cost', '0.00-2.00', '0.94', 1, 90989),
     createData('Google Trend', '0-100', '100', 0, 14001)
