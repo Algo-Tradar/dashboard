@@ -14,12 +14,13 @@ import Box from '@mui/material/Box';
 
 // project imports
 import MainCard from 'components/MainCard';
+import get_greed_fear_index from 'data/get_greed_fear_index';
 import AnalyticEcommerce from 'components/cards/statistics/AnalyticEcommerce';
 import MonthlyBarChart from 'sections/dashboard/default/MonthlyBarChart';
 import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
 import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
 import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
-import OrdersTable from 'sections/dashboard/default/OrdersTable';
+import IndicatorTable from 'sections/dashboard/default/IndicatorTable';
 
 // assets
 import GiftOutlined from '@ant-design/icons/GiftOutlined';
@@ -177,7 +178,7 @@ export default function DashboardDefault() {
           <Grid />
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <OrdersTable />
+          <IndicatorTable />
         </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>

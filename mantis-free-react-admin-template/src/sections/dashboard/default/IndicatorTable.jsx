@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import get_greed_fear_index from 'data/get_greed_fear_index';
 
 // project imports
 import Dot from 'components/@extended/Dot';
@@ -194,14 +195,12 @@ export default function IndicatorTable() {
         console.log('AI Trend Navigator:', selectedIndicators.aiTrendNavigator);
 
         // Fetch Fear & Greed Index
-        const fearGreedResponse = await fetch('https://api.alternative.me/fng/?limit=1&format=json');
-        if (!fearGreedResponse.ok) throw new Error('Failed to fetch Fear & Greed Index');
-        const fearGreedData = await fearGreedResponse.json();
-        const fearGreedValue = fearGreedData.data[0].value;
+        const [fearGreedGrade, fearGreedValue] = await get_greed_fear_index();
         const fearGreedStatus = fearGreedValue < 20 ? 1 : fearGreedValue > 80 ? 2 : 0;
         setFearGreedValue(fearGreedValue);
         setFearGreedStatus(fearGreedStatus);
-        console.log('Fear & Greed Index:', fearGreedValue);
+        console.log('Fear & Greed Index:', fearGreedValue, fearGreedGrade);
+
 
       } catch (error) {
         console.error('Error fetching data:', error);
