@@ -18,6 +18,26 @@ import get_greed_fear_index from 'data/get_greed_fear_index';
 // project imports
 import Dot from 'components/@extended/Dot';
 
+// API Configuration
+const API_BASE_URL = 'http://localhost:5002';
+
+// API endpoints
+const API_ENDPOINTS = {
+  indicators: '/api/indicators',
+  fearGreed: '/api/fear-greed',
+  miningCost: '/api/mining-cost',
+  googleTrends: '/api/google-trends'
+};
+
+// Helper function for API calls
+const fetchFromApi = async (endpoint, crypto = '') => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}/${crypto}`.replace(/\/$/, ''));
+  if (!response.ok) {
+    throw new Error(`API call failed: ${response.status}`);
+  }
+  return response.json();
+};
+
 // Function to create data structure for table rows
 function createData(tracking_no, name, fat, carbs) {
   return { tracking_no, name, fat, carbs };
@@ -108,6 +128,8 @@ export default function IndicatorTable() {
   const [fearGreedStatus, setFearGreedStatus] = useState(0);
   const [miningCostValue, setMiningCostValue] = useState('Loading...');
   const [miningCostStatus, setMiningCostStatus] = useState(0);
+  const [googleTrendsValue, setGoogleTrendsValue] = useState('Loading...');
+  const [googleTrendsStatus, setGoogleTrendsStatus] = useState(0);
   const previousSmaStatus = useRef(null);
   const order = 'asc';
   const orderBy = 'tracking_no';
@@ -121,108 +143,94 @@ export default function IndicatorTable() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log(`Fetching data for ${selectedCrypto}`);
+        const cryptoSymbol = selectedCrypto.replace('USDT', '');
 
-        // Fetch historical data for the past 128 days
-        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${selectedCrypto}&interval=1d&limit=128`);
-        if (!response.ok) throw new Error('Failed to fetch historical data');
-        const data = await response.json();
-        console.log('Historical data:', data);
+        // Fetch Binance data
+        const [historicalData, currentPrice, fundingRate] = await Promise.all([
+          fetch(`https://api.binance.com/api/v3/klines?symbol=${selectedCrypto}&interval=1d&limit=128`).then(res => res.json()),
+          fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${selectedCrypto}`).then(res => res.json()),
+          fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${selectedCrypto}`).then(res => res.json())
+        ]);
 
-        // Extract closing prices
-        const closingPrices = data.map(item => parseFloat(item[4])); // 4th index is the closing price
-
-        // Calculate the 128 SMA
+        // Process SMA data
+        const closingPrices = historicalData.map(item => parseFloat(item[4]));
         const sma128 = calculateSMA(closingPrices, 128);
         setSmaValue(sma128.toFixed(2));
-        console.log('128 SMA:', sma128);
 
-        // Fetch current price
-        const currentResponse = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${selectedCrypto}`);
-        if (!currentResponse.ok) throw new Error('Failed to fetch current price');
-        const currentData = await currentResponse.json();
-        const currentPrice = parseFloat(currentData.price);
-        console.log('Current price:', currentPrice);
-
-        // Calculate percentage difference
-        const percentageDifference = ((currentPrice - sma128) / sma128) * 100;
-
-        // Determine the decision based on the logic provided
-        let decision = 0; // Default to Hold
-        if (currentPrice > sma128) {
-          decision = percentageDifference > 7 ? 2 : 0; // Sell or Hold
+        // Calculate SMA decision
+        const currentPriceValue = parseFloat(currentPrice.price);
+        const percentageDifference = ((currentPriceValue - sma128) / sma128) * 100;
+        let decision = 0;
+        if (currentPriceValue > sma128) {
+          decision = percentageDifference > 7 ? 2 : 0;
         } else {
-          decision = percentageDifference < -20 ? 1 : 0; // Buy or Hold
+          decision = percentageDifference < -20 ? 1 : 0;
         }
-
-        // Check for status change
-        if (previousSmaStatus.current !== null) {
-          if (previousSmaStatus.current === 1 && decision === 2) {
-            decision = 2; // Sell
-          } else if (previousSmaStatus.current === 2 && decision === 1) {
-            decision = 1; // Buy
-          }
-        }
-
-        previousSmaStatus.current = decision;
         setSmaStatus(decision);
 
-        // Fetch funding rate
-        const fundingResponse = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${selectedCrypto}`);
-        if (!fundingResponse.ok) throw new Error('Failed to fetch funding rate');
-        const fundingData = await fundingResponse.json();
-        const fundingRateValue = parseFloat(fundingData.lastFundingRate) * 100;
+        // Process funding rate
+        const fundingRateValue = parseFloat(fundingRate.lastFundingRate) * 100;
         setFundingRate(fundingRateValue.toFixed(4) + '%');
-        console.log('Funding rate:', fundingRateValue);
+        setFundingRateStatus(fundingRateValue < 0 ? 1 : 2);
 
-        // Determine funding rate status
-        const fundingStatus = fundingRateValue < 0 ? 1 : 2;
-        setFundingRateStatus(fundingStatus);
+        // Fetch data from our API
+        const [indicators, fearGreed, miningCost, googleTrends] = await Promise.all([
+          fetchFromApi(API_ENDPOINTS.indicators),
+          fetchFromApi(API_ENDPOINTS.fearGreed, cryptoSymbol),
+          fetchFromApi(API_ENDPOINTS.miningCost, cryptoSymbol),
+          fetchFromApi(API_ENDPOINTS.googleTrends, cryptoSymbol)
+        ]);
 
-        // Fetch data from Flask API
-        const indicatorsResponse = await fetch('http://192.168.10.177:5002/api/indicators');
-        if (!indicatorsResponse.ok) throw new Error('Failed to fetch indicators');
-        const indicatorsData = await indicatorsResponse.json();
-
-        // Access data for the selected cryptocurrency
-        const selectedIndicators = indicatorsData[selectedCrypto] || {};
-
-        // Set state with the selected cryptocurrency's data
+        // Process indicators data
+        const selectedIndicators = indicators[selectedCrypto] || {};
         setKnnMovingAverage(selectedIndicators.knnMovingAverage || 'N/A');
         setKeltnerChannels(selectedIndicators.keltnerChannels || 'N/A');
         setAiTrendNavigator(selectedIndicators.aiTrendNavigator || 'N/A');
 
-        console.log('Knn Moving Average:', selectedIndicators.knnMovingAverage);
-        console.log('Keltner Channels:', selectedIndicators.keltnerChannels);
-        console.log('AI Trend Navigator:', selectedIndicators.aiTrendNavigator);
+        // Process Fear & Greed data
+        if (fearGreed && fearGreed['Fear-Greed']) {
+          const { value, change, valuation } = fearGreed['Fear-Greed'];
+          setFearGreedValue(`${change.toFixed(2)}%`);
+          setFearGreedStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+        }
 
-        // Fetch Fear & Greed Index
-        const [fearGreedGrade, fearGreedValue] = await get_greed_fear_index();
-        const fearGreedStatus = fearGreedValue < 20 ? 1 : fearGreedValue > 80 ? 2 : 0;
-        setFearGreedValue(fearGreedValue);
-        setFearGreedStatus(fearGreedStatus);
-        console.log('Fear & Greed Index:', fearGreedValue, fearGreedGrade);
+        // Process Mining Cost data
+        if (miningCost && miningCost['Mining-Cost']) {
+          const { ratio, valuation } = miningCost['Mining-Cost'];
+          setMiningCostValue(ratio.toFixed(2));
+          setMiningCostStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+        }
 
-
+        // Process Google Trends data
+        if (googleTrends && googleTrends['Google-Trends']) {
+          const { change, valuation } = googleTrends['Google-Trends'];
+          setGoogleTrendsValue(`${change.toFixed(2)}%`);
+          setGoogleTrendsStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+        }
 
       } catch (error) {
         console.error('Error fetching data:', error);
-        setSmaValue('Error');
-        setSmaStatus('Error');
-        setFundingRate('Error');
-        setFundingRateStatus(0);
-        setKnnMovingAverage('Error');
-        setKeltnerChannels('Error');
-        setAiTrendNavigator('Error');
-        setFearGreedValue('Error');
-        setFearGreedStatus(0);
+        // Set error states
+        const errorStates = {
+          sma: [setSmaValue, setSmaStatus],
+          funding: [setFundingRate, setFundingRateStatus],
+          knn: [setKnnMovingAverage],
+          keltner: [setKeltnerChannels],
+          ai: [setAiTrendNavigator],
+          fearGreed: [setFearGreedValue, setFearGreedStatus],
+          miningCost: [setMiningCostValue, setMiningCostStatus],
+          googleTrends: [setGoogleTrendsValue, setGoogleTrendsStatus]
+        };
+
+        Object.values(errorStates).flat().forEach(setter => {
+          setter(typeof setter(0) === 'number' ? 0 : 'Error');
+        });
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 60000); // Update every minute
-
-    return () => clearInterval(interval); // Cleanup on component unmount
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
   }, [selectedCrypto]);
 
   // Determine status for KNN Moving Average
@@ -284,9 +292,22 @@ export default function IndicatorTable() {
       fearGreedValue,
       fearGreedStatus
     ),
-    createData("Rainbow Price Chart", 'High/Low', 'High', 0, 180139),
-    createData('Mining Cost', '0.00-2.00', '0.94', 1, 90989),
-    createData('Google Trend', '0-100', '100', 0, 14001)
+    createData(
+      <Link href="https://www.coinglass.com/pro/i/MiningCost" target="_blank" rel="noopener noreferrer" color="secondary">
+        Mining Cost
+      </Link>,
+      '0.00-2.00',
+      miningCostValue,
+      miningCostStatus
+    ),
+    createData(
+      <Link href="https://trends.google.com/trends/" target="_blank" rel="noopener noreferrer" color="secondary">
+        Google Trends
+      </Link>,
+      '0-100',
+      googleTrendsValue,
+      googleTrendsStatus
+    )
   ];
 
   return (

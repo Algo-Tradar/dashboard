@@ -21,6 +21,7 @@ import ReportAreaChart from 'sections/dashboard/default/ReportAreaChart';
 import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
 import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
 import IndicatorTable from 'sections/dashboard/default/IndicatorTable';
+import EntityTable from 'sections/dashboard/default/EntityTable';
 
 // assets
 import GiftOutlined from '@ant-design/icons/GiftOutlined';
@@ -206,6 +207,20 @@ export default function DashboardDefault() {
           <ReportAreaChart />
         </MainCard>
       </Grid>
+
+      {/* Entity Holdings Table */}
+      <Grid size={{ xs: 12, md: 7, lg: 8 }}>
+        <Grid container alignItems="center" justifyContent="space-between">
+          <Grid>
+            <Typography variant="h5">Entity Holdings</Typography>
+          </Grid>
+          <Grid />
+        </Grid>
+        <MainCard sx={{ mt: 2 }} content={false}>
+          <EntityTable />
+        </MainCard>
+      </Grid>
+
       {/* row 4 */}
       {/* <Grid size={{ xs: 12, md: 7, lg: 8 }}>
         <SaleReportCard />
