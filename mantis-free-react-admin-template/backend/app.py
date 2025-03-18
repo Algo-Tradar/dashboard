@@ -43,6 +43,38 @@ DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_PORT = int(os.getenv('DB_PORT'))
 WEB_DB_NAME = os.getenv('WEB_DB_NAME')
 
+ENV_PATH = os.path.join(os.path.dirname(__file__), '..', '.env')
+
+def update_env_with_token(token_json):
+    """Update .env file with new token"""
+    if not os.path.exists(ENV_PATH):
+        print(f"Error: .env file not found at {ENV_PATH}")
+        return
+    
+    # Read all lines from .env
+    with open(ENV_PATH, 'r') as file:
+        lines = file.readlines()
+    
+    token_line_exists = False
+    # Update the GMAIL_TOKEN line if it exists
+    for i, line in enumerate(lines):
+        if line.startswith('GMAIL_TOKEN='):
+            lines[i] = f'GMAIL_TOKEN=\'{token_json}\'\n'
+            token_line_exists = True
+            break
+    
+    # Add GMAIL_TOKEN line if it doesn't exist
+    if not token_line_exists:
+        # Ensure there's a newline before adding new entry
+        if lines and not lines[-1].endswith('\n'):
+            lines.append('\n')
+        lines.append(f'GMAIL_TOKEN=\'{token_json}\'\n')
+    
+    # Write back to .env
+    with open(ENV_PATH, 'w') as file:
+        file.writelines(lines)
+    print("Updated GMAIL_TOKEN in .env")
+
 def get_credentials():
     """Get valid credentials for Gmail API"""
     creds = None
@@ -58,6 +90,7 @@ def get_credentials():
         if creds and creds.expired and creds.refresh_token:
             try:
                 creds.refresh(Request())
+                update_env_with_token(creds.to_json())
             except Exception as e:
                 print(f"Error refreshing token: {e}")
                 creds = None
@@ -67,6 +100,7 @@ def get_credentials():
                 credentials_data = json.loads(GMAIL_WEBHOOK)
                 flow = InstalledAppFlow.from_client_config(credentials_data, SCOPES)
                 creds = flow.run_local_server(port=8080, access_type='offline', prompt='consent')
+                update_env_with_token(creds.to_json())
             except Exception as e:
                 print(f"Error in OAuth flow: {e}")
                 return None
