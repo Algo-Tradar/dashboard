@@ -38,6 +38,20 @@ const fetchFromApi = async (endpoint, crypto = '') => {
   return response.json();
 };
 
+// Function to fetch data from a local JSON file
+const fetchFromJson = async () => {
+  try {
+    const response = await fetch('/dashboard/backup_data.json');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from JSON: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching from JSON:', error);
+    return null;
+  }
+};
+
 // Function to create data structure for table rows
 function createData(tracking_no, name, fat, carbs) {
   return { tracking_no, name, fat, carbs };
@@ -142,9 +156,9 @@ export default function IndicatorTable() {
   // Effect hook to fetch data and update state
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const cryptoSymbol = selectedCrypto.replace('USDT', '');
+      const cryptoSymbol = selectedCrypto.replace('USDT', '');
 
+      try {
         // Fetch Binance data
         const [historicalData, currentPrice, fundingRate] = await Promise.all([
           fetch(`https://api.binance.com/api/v3/klines?symbol=${selectedCrypto}&interval=1d&limit=128`).then(res => res.json()),
@@ -209,22 +223,49 @@ export default function IndicatorTable() {
         }
 
       } catch (error) {
-        console.error('Error fetching data:', error);
-        // Set error states
-        const errorStates = {
-          sma: [setSmaValue, setSmaStatus],
-          funding: [setFundingRate, setFundingRateStatus],
-          knn: [setKnnMovingAverage],
-          keltner: [setKeltnerChannels],
-          ai: [setAiTrendNavigator],
-          fearGreed: [setFearGreedValue, setFearGreedStatus],
-          miningCost: [setMiningCostValue, setMiningCostStatus],
-          googleTrends: [setGoogleTrendsValue, setGoogleTrendsStatus]
-        };
+        console.error('Error fetching data from API:', error);
 
-        Object.values(errorStates).flat().forEach(setter => {
-          setter(typeof setter(0) === 'number' ? 0 : 'Error');
-        });
+        // Fetch data from JSON as a fallback
+        const backupData = await fetchFromJson();
+        if (backupData) {
+          const { indicator_data, crypto_data } = backupData;
+
+          // Process indicators data from JSON
+          const selectedIndicators = indicator_data[selectedCrypto] || {};
+          setKnnMovingAverage(selectedIndicators.knnMovingAverage || 'N/A');
+          setKeltnerChannels(selectedIndicators.keltnerChannels || 'N/A');
+          setAiTrendNavigator(selectedIndicators.aiTrendNavigator || 'N/A');
+
+          // Process Fear & Greed data from JSON
+          const fearGreed = crypto_data['Fear-Greed'][cryptoSymbol];
+          console.log('Fear & Greed Data:', fearGreed);
+          if (fearGreed) {
+            const { value, change, valuation } = fearGreed['Fear-Greed'];
+            console.log('Setting Fear & Greed Value:', change.toFixed(2), 'Status:', valuation);
+            setFearGreedValue(`${change.toFixed(2)}%`);
+            setFearGreedStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+          }
+
+          // Process Mining Cost data from JSON
+          const miningCost = crypto_data['Mining-Cost'][cryptoSymbol];
+          console.log('Mining Cost Data:', miningCost);
+          if (miningCost) {
+            const { ratio, valuation } = miningCost['Mining-Cost'];
+            console.log('Setting Mining Cost Value:', ratio.toFixed(2), 'Status:', valuation);
+            setMiningCostValue(ratio.toFixed(2));
+            setMiningCostStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+          }
+
+          // Process Google Trends data from JSON
+          const googleTrends = crypto_data['Google-Trends'][cryptoSymbol];
+          console.log('Google Trends Data:', googleTrends);
+          if (googleTrends) {
+            const { change, valuation } = googleTrends['Google-Trends'];
+            console.log('Setting Google Trends Value:', change.toFixed(2), 'Status:', valuation);
+            setGoogleTrendsValue(`${change.toFixed(2)}%`);
+            setGoogleTrendsStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+          }
+        }
       }
     };
 
