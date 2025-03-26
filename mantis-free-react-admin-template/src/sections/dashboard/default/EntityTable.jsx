@@ -31,6 +31,20 @@ const fetchFromApi = async (endpoint, crypto = '') => {
   return response.json();
 };
 
+// Function to fetch data from a local JSON file
+const fetchFromJson = async () => {
+  try {
+    const response = await fetch('/dashboard/backup_data.json');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from JSON: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching from JSON:', error);
+    return null;
+  }
+};
+
 // Component for rendering the table header
 function EntityTableHead({ category }) {
   return (
@@ -128,23 +142,19 @@ ChangeValue.propTypes = {
 
 // Main component for the entity table
 export default function EntityTable() {
-  const [selectedCrypto, setSelectedCrypto] = useState('BTC');
   const [entityData, setEntityData] = useState({
     ETFs: {},
     CEX: {},
     Companies: {}
   });
 
-  // Handler for changing the selected cryptocurrency
-  const handleCryptoChange = (event) => {
-    setSelectedCrypto(event.target.value);
-  };
-
   // Effect hook to fetch data and update state
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchFromApi('/api/entities', selectedCrypto);
+        // Attempt to fetch data from the API
+        const response = await fetchFromApi('/api/entities');
+        console.log('API Response:', response);
         setEntityData(response.Entities || {
           ETFs: {},
           CEX: {},
@@ -152,20 +162,36 @@ export default function EntityTable() {
         });
       } catch (error) {
         console.error('Error fetching entity data:', error);
-        setEntityData({
-          ETFs: {},
-          CEX: {},
-          Companies: {}
-        });
+
+        // Fallback to JSON data
+        const backupData = await fetchFromJson();
+        console.log('Backup Data:', backupData);
+        if (backupData && backupData.crypto_data) {
+          // Access the correct level of the JSON structure
+          const { BTC } = backupData.crypto_data.Entities;
+          console.log('Entities from JSON:', BTC.Entities);
+          setEntityData(BTC.Entities || {
+            ETFs: {},
+            CEX: {},
+            Companies: {}
+          });
+        } else {
+          // Ensure entityData is always initialized
+          setEntityData({
+            ETFs: {},
+            CEX: {},
+            Companies: {}
+          });
+        }
       }
     };
 
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, [selectedCrypto]);
+  }, []);
 
-  const renderCategoryTable = (category, entities) => (
+  const renderCategoryTable = (category, entities = {}) => (
     <Table sx={{ mb: 4, tableLayout: 'fixed', width: '100%' }}>
       <EntityTableHead category={category} />
       <TableBody>
@@ -198,13 +224,6 @@ export default function EntityTable() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Select value={selectedCrypto} onChange={handleCryptoChange} variant="outlined" size="small">
-          <MenuItem value="BTC">Bitcoin</MenuItem>
-          <MenuItem value="ETH">Ethereum</MenuItem>
-          <MenuItem value="SOL">Solana</MenuItem>
-        </Select>
-      </Box>
       <TableContainer
         sx={{
           width: '100%',

@@ -1,0 +1,279 @@
+{
+    "indicator_data": {
+        "BTCUSDT": {
+            "knnMovingAverage": "Above",
+            "keltnerChannels": "Middle",
+            "aiTrendNavigator": "Green"
+        },
+        "ETHUSDT": {
+            "knnMovingAverage": "Above",
+            "keltnerChannels": "Middle",
+            "aiTrendNavigator": "Green"
+        },
+        "SOLUSDT": {
+            "knnMovingAverage": "Above",
+            "keltnerChannels": "Middle",
+            "aiTrendNavigator": "Green"
+        }
+    },
+    "crypto_data": {
+        "Fear-Greed": {
+            "BTC": {
+                "Fear-Greed": {
+                    "value": 47,
+                    "change": 2.1739130434782608,
+                    "valuation": "Hold"
+                }
+            },
+            "ETH": {
+                "Fear-Greed": {
+                    "value": 47,
+                    "change": 2.1739130434782608,
+                    "valuation": "Hold"
+                }
+            },
+            "SOL": {
+                "Fear-Greed": {
+                    "value": 47,
+                    "change": 2.1739130434782608,
+                    "valuation": "Hold"
+                }
+            }
+        },
+        "Mining-Cost": {
+            "BTC": {
+                "Mining-Cost": {
+                    "cost": 80431.0,
+                    "ratio": 0.92,
+                    "valuation": "Buy"
+                }
+            }
+        },
+        "Distribution": {
+            "BTC": {
+                "Distribution": {
+                    "0.001 - 1 BTC": -45.0,
+                    "1 - 10 BTC": -309.0,
+                    "10 - 100 BTC": 459.0,
+                    "100+ BTC": 5.0
+                }
+            }
+        },
+        "Google-Trends": {
+            "BTC": {
+                "Google-Trends": {
+                    "change": -20.0,
+                    "valuation": "Hold"
+                }
+            },
+            "ETH": {
+                "Google-Trends": {
+                    "change": -20.0,
+                    "valuation": "Hold"
+                }
+            },
+            "SOL": {
+                "Google-Trends": {
+                    "change": -20.0,
+                    "valuation": "Hold"
+                }
+            }
+        },
+        "Order-Book": {
+            "BTC": {
+                "Order-Book": {
+                    "ratio": 0.00023156167058257818,
+                    "valuation": "Hold"
+                }
+            }
+        },
+        "Entities": {
+            "BTC": {
+                "Entities": {
+                    "ETFs": {
+                        "blackrock": {
+                            "change": "+554 (*+0.10%*)",
+                            "streak": "6d (*+0.45%*)"
+                        },
+                        "fidelity": {
+                            "change": "+89 (*+0.03%*)",
+                            "streak": "6d (*+0.04%*)"
+                        },
+                        "grayscale": {
+                            "change": "-664 (*-0.28%*)",
+                            "streak": "21d (*-3.29%*)"
+                        },
+                        "ark": {
+                            "change": "-464 (*-0.96%*)",
+                            "streak": ""
+                        },
+                        "bitwise": {
+                            "change": "+218 (*+0.57%*)",
+                            "streak": "6d (*+0.03%*)"
+                        }
+                    },
+                    "CEX": {
+                        "binance": {
+                            "change": "-10,858 (*-1.69%*)",
+                            "streak": "9d (*-1.17%*)"
+                        },
+                        "coinbase": {
+                            "change": "+1,000 (*+0.10%*)",
+                            "streak": "21d (*+14.75%*)"
+                        },
+                        "bitfinex": {
+                            "change": "-21,244 (*-11.29%*)",
+                            "streak": "21d (*-9.33%*)"
+                        },
+                        "kraken": {
+                            "change": "-1,765 (*-1.13%*)",
+                            "streak": "6d (*-2.07%*)"
+                        },
+                        "robinhood": {
+                            "change": "+253 (*+0.16%*)",
+                            "streak": "21d (*+2.72%*)"
+                        }
+                    },
+                    "Companies": {
+                        "microstrategy": {
+                            "change": "hold",
+                            "streak": ""
+                        },
+                        "worldliberty": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "usg": {
+                            "change": "",
+                            "streak": ""
+                        }
+                    }
+                }
+            },
+            "ETH": {
+                "Entities": {
+                    "ETFs": {
+                        "blackrock": {
+                            "change": "-6,000 (*-0.51%*)",
+                            "streak": "20d (*-12.67%*)"
+                        },
+                        "fidelity": {
+                            "change": "+35 (*+0.02%*)",
+                            "streak": ""
+                        },
+                        "grayscale": {
+                            "change": "-3,000 (*-0.18%*)",
+                            "streak": "21d (*-5.94%*)"
+                        },
+                        "ark": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "bitwise": {
+                            "change": "hold",
+                            "streak": ""
+                        }
+                    },
+                    "CEX": {
+                        "binance": {
+                            "change": "-4,000 (*-0.08%*)",
+                            "streak": "7d (*-0.69%*)"
+                        },
+                        "coinbase": {
+                            "change": "+5,000 (*+0.08%*)",
+                            "streak": "21d (*+6.85%*)"
+                        },
+                        "bitfinex": {
+                            "change": "+1,000 (*+0.04%*)",
+                            "streak": "21d (*+14.93%*)"
+                        },
+                        "kraken": {
+                            "change": "+8,000 (*+0.79%*)",
+                            "streak": "6d (*+1.28%*)"
+                        },
+                        "robinhood": {
+                            "change": "+1,000 (*+0.06%*)",
+                            "streak": ""
+                        }
+                    },
+                    "Companies": {
+                        "microstrategy": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "worldliberty": {
+                            "change": "hold",
+                            "streak": ""
+                        },
+                        "usg": {
+                            "change": "",
+                            "streak": ""
+                        }
+                    }
+                }
+            },
+            "SOL": {
+                "Entities": {
+                    "ETFs": {
+                        "blackrock": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "fidelity": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "grayscale": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "ark": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "bitwise": {
+                            "change": "",
+                            "streak": ""
+                        }
+                    },
+                    "CEX": {
+                        "binance": {
+                            "change": "+72,000 (*+0.34%*)",
+                            "streak": ""
+                        },
+                        "coinbase": {
+                            "change": "-17,000 (*-0.07%*)",
+                            "streak": "6d (*-0.33%*)"
+                        },
+                        "bitfinex": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "kraken": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "robinhood": {
+                            "change": "-10,000 (*-0.34%*)",
+                            "streak": ""
+                        }
+                    },
+                    "Companies": {
+                        "microstrategy": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "worldliberty": {
+                            "change": "",
+                            "streak": ""
+                        },
+                        "usg": {
+                            "change": "",
+                            "streak": ""
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

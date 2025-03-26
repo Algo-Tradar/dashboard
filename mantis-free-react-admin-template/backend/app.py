@@ -1,8 +1,7 @@
 import os
 import json
 import pymysql
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask import Flask, jsonify, request, send_from_directory
 from dotenv import load_dotenv
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -11,16 +10,18 @@ from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 import base64
 import requests
+from flask_cors import CORS
 
-# Load environment variables
+# Load environment variables from a .env file
 load_dotenv()
 
 # Initialize the Flask application
 app = Flask(__name__)
-# Configure CORS to allow requests from any origin
+
+# Enable Cross-Origin Resource Sharing (CORS) for the app
 CORS(app)
 
-# Initialize dictionaries to store data
+# Initialize dictionaries to store indicator and crypto data
 indicator_data = {}
 crypto_data = {
     'Fear-Greed': {},
@@ -31,19 +32,21 @@ crypto_data = {
     'Entities': {}
 }
 
-# Gmail Configuration
+# Gmail Configuration: Load webhook and token from environment variables
 GMAIL_WEBHOOK = os.getenv("GMAIL_WEBHOOK")
 GMAIL_TOKEN = os.getenv("GMAIL_TOKEN")
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
-# Database Configuration
+# Database Configuration: Load database connection details from environment variables
 DB_HOST = os.getenv('DB_HOST')
 DB_USER = os.getenv('DB_USER')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_PORT = int(os.getenv('DB_PORT'))
 WEB_DB_NAME = os.getenv('WEB_DB_NAME')
 
+# Define paths for environment and backup files
 ENV_PATH = os.path.join(os.path.dirname(__file__), '..', '.env')
+BACKUP_FILE_PATH = '../public/backup_data.json'
 
 def update_env_with_token(token_json):
     """Update .env file with new token"""
@@ -181,7 +184,7 @@ def get_alerts():
             return None
 
         service = build('gmail', 'v1', credentials=creds)
-        four_hours_ago = int((datetime.now() - timedelta(hours=4)).timestamp())
+        four_hours_ago = int((datetime.now() - timedelta(hours=23)).timestamp())
         query = f"in:inbox after:{four_hours_ago}"
         results = service.users().messages().list(userId='me', q=query).execute()
         messages = results.get('messages', [])
@@ -310,9 +313,22 @@ def load_initial_data():
         for column in columns:
             get_crypto_data(column, crypto)
 
+def save_data_to_json():
+    """Save current data to a JSON file for backup."""
+    try:
+        with open(BACKUP_FILE_PATH, 'w') as backup_file:
+            json.dump({
+                'indicator_data': indicator_data,
+                'crypto_data': crypto_data
+            }, backup_file, indent=4)
+        print("Data successfully backed up to JSON.")
+    except Exception as e:
+        print(f"Error saving data to JSON: {e}")
+
 # API Routes
 @app.route('/api/indicators', methods=['GET'])
 def get_indicators():
+    save_data_to_json()  # Save data when accessed
     return jsonify(indicator_data)
 
 @app.route('/api/update_indicators', methods=['POST'])
@@ -323,6 +339,7 @@ def update_indicators():
             return jsonify({"error": "No data provided"}), 400
             
         indicator_data.update(new_data)
+        save_data_to_json()  # Save data after updating
         return jsonify({"message": "Success", "data": indicator_data})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -332,36 +349,42 @@ def update_indicators():
 @app.route('/api/distribution/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_distribution(crypto):
     result, status_code = get_crypto_data('Distribution', crypto)
+    save_data_to_json()  # Save data when accessed
     return jsonify(result), status_code
 
 @app.route('/api/google-trends/<crypto>', methods=['GET'])
 @app.route('/api/google-trends/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_google_trends(crypto):
     result, status_code = get_crypto_data('Google-Trends', crypto)
+    save_data_to_json()  # Save data when accessed
     return jsonify(result), status_code
 
 @app.route('/api/fear-greed/<crypto>', methods=['GET'])
 @app.route('/api/fear-greed/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_fear_greed(crypto):
     result, status_code = get_crypto_data('Fear-Greed', crypto)
+    save_data_to_json()  # Save data when accessed
     return jsonify(result), status_code
 
 @app.route('/api/mining-cost/<crypto>', methods=['GET'])
 @app.route('/api/mining-cost/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_mining_cost(crypto):
     result, status_code = get_crypto_data('Mining-Cost', crypto)
+    save_data_to_json()  # Save data when accessed
     return jsonify(result), status_code
 
 @app.route('/api/order-book/<crypto>', methods=['GET'])
 @app.route('/api/order-book/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_order_book(crypto):
     result, status_code = get_crypto_data('Order-Book', crypto)
+    save_data_to_json()  # Save data when accessed
     return jsonify(result), status_code
 
 @app.route('/api/entities/<crypto>', methods=['GET'])
 @app.route('/api/entities/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_entities(crypto):
     result, status_code = get_crypto_data('Entities', crypto)
+    save_data_to_json()  # Save data when accessed
     return jsonify(result), status_code
 
 @app.route('/api/check_alerts', methods=['GET'])
@@ -370,6 +393,7 @@ def check_alerts():
     alerts = get_alerts()
     if alerts:
         indicator_data.update(alerts)
+        save_data_to_json()  # Save data after updating
         return jsonify({"message": "Alerts updated", "data": alerts})
     return jsonify({"message": "No new alerts found"})
 
