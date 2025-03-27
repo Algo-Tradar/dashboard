@@ -111,10 +111,32 @@ export default function DashboardDefault() {
     const fetchSignalHistory = async () => {
       try {
         const response = await fetch('http://localhost:5002/api/signal_history');
+        if (!response.ok) throw new Error('API request failed');
         const data = await response.json();
-        setSignals(data);
+        if (Array.isArray(data)) {
+          setSignals(data);
+        } else {
+          console.error('API did not return an array');
+          setSignals([]);
+        }
       } catch (error) {
-        console.error('Error fetching signal history:', error);
+        console.error('Error fetching signal history from API:', error);
+        // Fallback to backup data
+        try {
+          const backupResponse = await fetch('/dashboard/backup_data.json');
+          if (!backupResponse.ok) throw new Error('Backup data request failed');
+          const backupData = await backupResponse.json();
+          const signalHistory = backupData.indicator_data.signal_history; // Correctly access the key
+          if (Array.isArray(signalHistory)) {
+            setSignals(signalHistory);
+          } else {
+            console.error('Backup data did not return an array');
+            setSignals([]);
+          }
+        } catch (backupError) {
+          console.error('Error fetching backup data:', backupError);
+          setSignals([]);
+        }
       }
     };
 
