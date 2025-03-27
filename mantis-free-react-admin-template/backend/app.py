@@ -46,7 +46,8 @@ WEB_DB_NAME = os.getenv('WEB_DB_NAME')
 
 # Define paths for environment and backup files
 ENV_PATH = os.path.join(os.path.dirname(__file__), '..', '.env')
-BACKUP_FILE_PATH = '../public/backup_data.json'
+# Use an absolute path for the backup file
+BACKUP_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'public', 'backup_data.json'))
 
 def update_env_with_token(token_json):
     """Update .env file with new token"""
@@ -175,6 +176,49 @@ def extract_indicators(content):
         elif "AI Trend Navigator:" in line:
             indicators['aiTrendNavigator'] = line.split(":")[1].strip()
     return indicators
+
+def extract_signal_history(service, msg_data):
+    """Extract signal history details from email content"""
+    headers = msg_data.get('payload', {}).get('headers', [])
+    subject = ""
+    
+    # Extract the subject from the email headers
+    for header in headers:
+        if header.get('name', '').lower() == 'subject':
+            subject = header.get('value', '')
+            break
+
+    # Process all emails with subjects starting with 'Alert:'
+    if not subject.startswith("Alert:"):
+        return None
+
+    # Extract the desired part of the subtitle
+    start = subject.find("Alert:") + len("Alert:")
+    end = subject.find("(") if "(" in subject else len(subject)
+    subtitle = subject[start:end].strip()
+
+    signal_details = {
+        'subtitle': subtitle
+    }
+    
+    content = get_email_content(service, msg_data['id'])
+    lines = content.splitlines()
+    
+    for line in lines:
+        # Capture lines that contain 'Time:' and 'Price:' for signal details
+        if "Time:" in line:
+            signal_details['time'] = line.split("Time:")[1].strip()
+        elif "Price:" in line:
+            signal_details['price'] = line.split("Price:")[1].strip()
+        else:
+            # Use the first non-empty line as the description
+            if 'description' not in signal_details and line.strip():
+                signal_details['description'] = line.strip()
+    
+    # Ensure all required fields are present
+    if 'description' in signal_details and 'price' in signal_details and 'time' in signal_details:
+        return signal_details
+    return None
 
 def get_alerts():
     """Get alerts from Gmail"""
@@ -316,7 +360,19 @@ def load_initial_data():
 def save_data_to_json():
     """Save current data to a JSON file for backup."""
     try:
-        with open(BACKUP_FILE_PATH, 'w') as backup_file:
+        # Print the current working directory
+        print(f"Current working directory: {os.getcwd()}")  # Debug: Print current working directory
+        # Get the absolute path for the backup file
+        absolute_backup_path = os.path.abspath(BACKUP_FILE_PATH)
+        print(f"Attempting to save data to {absolute_backup_path}...")  # Debug: Print absolute file path
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(absolute_backup_path), exist_ok=True)
+        # Test writing a simple string to the file
+        with open(absolute_backup_path, 'w') as test_file:
+            test_file.write("Test write operation\n")
+        print("Test write operation successful.")
+        # Now write the actual data
+        with open(absolute_backup_path, 'w') as backup_file:
             json.dump({
                 'indicator_data': indicator_data,
                 'crypto_data': crypto_data
@@ -325,11 +381,43 @@ def save_data_to_json():
     except Exception as e:
         print(f"Error saving data to JSON: {e}")
 
+def fetch_signal_history_from_gmail():
+    """Fetch signal history from Gmail"""
+    try:
+        creds = get_credentials()
+        if not creds:
+            return None
+
+        service = build('gmail', 'v1', credentials=creds)
+        # Fetch emails from the last two days
+        two_days_ago = datetime.now() - timedelta(days=2)
+        query = f"in:inbox after:{two_days_ago.strftime('%Y/%m/%d')}"
+        results = service.users().messages().list(userId='me', q=query).execute()
+        messages = results.get('messages', [])
+
+        if not messages:
+            return None
+
+        signal_history_list = []
+        for msg in messages:
+            msg_data = service.users().messages().get(userId='me', id=msg['id']).execute()
+            signal_history = extract_signal_history(service, msg_data)
+            if signal_history:
+                signal_history_list.append(signal_history)
+
+        if not signal_history_list:
+            return None
+
+        return signal_history_list
+
+    except Exception as e:
+        return None
+
 # API Routes
 @app.route('/api/indicators', methods=['GET'])
 def get_indicators():
     save_data_to_json()  # Save data when accessed
-    return jsonify(indicator_data)
+    return jsonify({'indicator_data': indicator_data})
 
 @app.route('/api/update_indicators', methods=['POST'])
 def update_indicators():
@@ -397,6 +485,18 @@ def check_alerts():
         return jsonify({"message": "Alerts updated", "data": alerts})
     return jsonify({"message": "No new alerts found"})
 
+@app.route('/api/signal_history', methods=['GET'])
+def get_signal_history():
+    """Endpoint to get signal history from Gmail and save to backup_data.json."""
+    signal_history_list = fetch_signal_history_from_gmail()
+    if signal_history_list:
+        # Assuming signal history should be part of indicator_data
+        indicator_data['signal_history'] = signal_history_list
+        print(f"Final indicator_data before saving: {json.dumps(indicator_data, indent=4)}")  # Debug: Print final state of indicator_data
+        save_data_to_json()  # Save data after updating indicator_data
+        return jsonify(signal_history_list), 200
+    return jsonify([]), 404
+
 if __name__ == '__main__':
     print("\nVerifying database setup...")
     if verify_database_setup():
@@ -412,6 +512,6 @@ if __name__ == '__main__':
             print("No alerts found")
         print("\nStarting server...")
         print("Server will be accessible at http://localhost:5002")
-        app.run(debug=True, host='0.0.0.0', port=5002)
+        app.run(debug=False, host='0.0.0.0', port=5002)
     else:
-        print("\nDatabase verification failed! Please check your database setup.")
+        print("\nDatabase verification failed! Please check your database setup.") 

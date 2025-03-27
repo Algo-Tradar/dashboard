@@ -61,6 +61,7 @@ export default function DashboardDefault() {
   const [ethChange, setEthChange] = useState(0);
   const [solPrice, setSolPrice] = useState("Loading...");
   const [solChange, setSolChange] = useState(0);
+  const [signals, setSignals] = useState([]);
 
   useEffect(() => {
     const fetchCryptoData = async () => {
@@ -102,6 +103,23 @@ export default function DashboardDefault() {
 
     fetchCryptoData();
     const interval = setInterval(fetchCryptoData, 1000); // Update every second
+
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, []);
+
+  useEffect(() => {
+    const fetchSignalHistory = async () => {
+      try {
+        const response = await fetch('http://localhost:5002/api/signal_history');
+        const data = await response.json();
+        setSignals(data);
+      } catch (error) {
+        console.error('Error fetching signal history:', error);
+      }
+    };
+
+    fetchSignalHistory();
+    const interval = setInterval(fetchSignalHistory, 10000); // Update every 10 seconds
 
     return () => clearInterval(interval); // Cleanup on component unmount
   }, []);
@@ -193,15 +211,15 @@ export default function DashboardDefault() {
           <List sx={{ p: 0, '& .MuiListItemButton-root': { py: 2 } }}>
             <ListItemButton divider>
               <ListItemText primary="AlgoTradar Index" />
-              <Typography variant="h5">56%</Typography>
+              <Typography variant="h5">56% (Coming Soon)</Typography>
             </ListItemButton>
             <ListItemButton divider>
               <ListItemText primary="Overall Market Alert" />
-              <Typography variant="h5">Sell</Typography>
+              <Typography variant="h5">Sell (Coming Soon)</Typography>
             </ListItemButton>
             <ListItemButton>
               <ListItemText primary="Market Risk" />
-              <Typography variant="h5">High</Typography>
+              <Typography variant="h5">High (Coming Soon)</Typography>
             </ListItemButton>
           </List>
           <ReportAreaChart />
@@ -233,75 +251,23 @@ export default function DashboardDefault() {
           <Grid />
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <List
-            component="nav"
-            sx={{
-              px: 0,
-              py: 0,
-              '& .MuiListItemButton-root': {
-                py: 1.5,
-                px: 2,
-                '& .MuiAvatar-root': avatarSX,
-                '& .MuiListItemSecondaryAction-root': { ...actionSX, position: 'relative' }
-              }
-            }}
-          >
-            <ListItem
-              component={ListItemButton}
-              divider
-              secondaryAction={
+          <List>
+            {signals.map((signal, index) => (
+              <ListItem key={index} component={ListItemButton} divider>
+                <ListItemText
+                  primary={<Typography variant="subtitle1">{signal.subtitle}</Typography>}
+                  secondary={signal.time}
+                />
                 <Stack sx={{ alignItems: 'flex-end' }}>
                   <Typography variant="subtitle1" noWrap>
-                    Price: 60000
+                    Price: {signal.price}
                   </Typography>
                   <Typography variant="h6" color="secondary" noWrap>
-                    Under 128 Moving Average
+                    {signal.description}
                   </Typography>
                 </Stack>
-              }
-            >
-              <ListItemAvatar>
-                <Box sx={{ bgcolor: 'success.main', width: 24, height: 24, borderRadius: '50%' }} />
-              </ListItemAvatar>
-              <ListItemText primary={<Typography variant="subtitle1">128 Moving Average</Typography>} secondary="Today, 2:00 AM" />
-            </ListItem>
-            <ListItem
-              component={ListItemButton}
-              divider
-              secondaryAction={
-                <Stack sx={{ alignItems: 'flex-end' }}>
-                  <Typography variant="subtitle1" noWrap>
-                    Price: 60000
-                  </Typography>
-                  <Typography variant="h6" color="secondary" noWrap>
-                    From Down to Up
-                  </Typography>
-                </Stack>
-              }
-            >
-              <ListItemAvatar>
-                <Box sx={{ bgcolor: 'success.main', width: 24, height: 24, borderRadius: '50%' }} />
-              </ListItemAvatar>
-              <ListItemText primary={<Typography variant="subtitle1">Knn Moving Average</Typography>} secondary="5 August, 1:45 PM" />
-            </ListItem>
-            <ListItem
-              component={ListItemButton}
-              secondaryAction={
-                <Stack sx={{ alignItems: 'flex-end' }}>
-                  <Typography variant="subtitle1" noWrap>
-                    Price: 60000
-                  </Typography>
-                  <Typography variant="h6" color="secondary" noWrap>
-                    Arrived Lower band
-                  </Typography>
-                </Stack>
-              }
-            >
-              <ListItemAvatar>
-                <Box sx={{ bgcolor: 'error.main', width: 24, height: 24, borderRadius: '50%' }} />
-              </ListItemAvatar>
-              <ListItemText primary={<Typography variant="subtitle1">Keltner Channel</Typography>} secondary="7 hours ago" />
-            </ListItem>
+              </ListItem>
+            ))}
           </List>
         </MainCard>
         <MainCard sx={{ mt: 2 }}>

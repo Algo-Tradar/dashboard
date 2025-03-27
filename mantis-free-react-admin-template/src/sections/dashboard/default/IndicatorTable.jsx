@@ -187,19 +187,38 @@ export default function IndicatorTable() {
         setFundingRate(fundingRateValue.toFixed(4) + '%');
         setFundingRateStatus(fundingRateValue < 0 ? 1 : 2);
 
+      } catch (error) {
+        console.error('Error fetching Binance data:', error);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
+  }, [selectedCrypto]);
+
+  // Effect hook to fetch data and update state
+  useEffect(() => {
+    const fetchData = async () => {
+      const cryptoSymbol = selectedCrypto.replace('USDT', '');
+
+      try {
         // Fetch data from our API
-        const [indicators, fearGreed, miningCost, googleTrends] = await Promise.all([
-          fetchFromApi(API_ENDPOINTS.indicators),
+        const indicators = await fetchFromApi(API_ENDPOINTS.indicators);
+        console.log('Indicators API Response:', indicators); // Debugging statement
+
+        // Process indicators data
+        const selectedIndicators = indicators.indicator_data[selectedCrypto] || {};
+        setKnnMovingAverage(selectedIndicators.knnMovingAverage || 'N/A');
+        setKeltnerChannels(selectedIndicators.keltnerChannels || 'N/A');
+        setAiTrendNavigator(selectedIndicators.aiTrendNavigator || 'N/A');
+
+        // Fetch other data
+        const [fearGreed, miningCost, googleTrends] = await Promise.all([
           fetchFromApi(API_ENDPOINTS.fearGreed, cryptoSymbol),
           fetchFromApi(API_ENDPOINTS.miningCost, cryptoSymbol),
           fetchFromApi(API_ENDPOINTS.googleTrends, cryptoSymbol)
         ]);
-
-        // Process indicators data
-        const selectedIndicators = indicators[selectedCrypto] || {};
-        setKnnMovingAverage(selectedIndicators.knnMovingAverage || 'N/A');
-        setKeltnerChannels(selectedIndicators.keltnerChannels || 'N/A');
-        setAiTrendNavigator(selectedIndicators.aiTrendNavigator || 'N/A');
 
         // Process Fear & Greed data
         if (fearGreed && fearGreed['Fear-Greed']) {
