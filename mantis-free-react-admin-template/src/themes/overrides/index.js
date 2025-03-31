@@ -52,6 +52,23 @@ export default function ComponentsOverrides(theme) {
     TableRow(),
     Tabs(),
     Tooltip(theme),
-    Typography()
+    Typography(),
+    {
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundColor: theme.palette.background.paper,
+            backgroundImage: 'none'
+          }
+        }
+      },
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.background.default
+          }
+        }
+      },
+    }
   );
 }
