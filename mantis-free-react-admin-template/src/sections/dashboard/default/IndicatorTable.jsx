@@ -128,9 +128,8 @@ function calculateSMA(data, period) {
 }
 
 // Main component for the indicator table
-export default function IndicatorTable() {
+export default function IndicatorTable({ selectedCrypto }) {
   // State variables for various indicators and statuses
-  const [selectedCrypto, setSelectedCrypto] = useState('BTCUSDT');
   const [smaValue, setSmaValue] = useState('Loading...');
   const [smaStatus, setSmaStatus] = useState('Loading...');
   const [fundingRate, setFundingRate] = useState('Loading...');
@@ -147,11 +146,6 @@ export default function IndicatorTable() {
   const previousSmaStatus = useRef(null);
   const order = 'asc';
   const orderBy = 'tracking_no';
-
-  // Handler for changing the selected cryptocurrency
-  const handleCryptoChange = (event) => {
-    setSelectedCrypto(event.target.value);
-  };
 
   // Effect hook to fetch data and update state
   useEffect(() => {
@@ -372,13 +366,6 @@ export default function IndicatorTable() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0, pr: 0 }}>
-        <Select value={selectedCrypto} onChange={handleCryptoChange} variant="outlined" size="small">
-          <MenuItem value="BTCUSDT">Bitcoin</MenuItem>
-          <MenuItem value="ETHUSDT">Ethereum</MenuItem>
-          <MenuItem value="SOLUSDT">Solana</MenuItem>
-        </Select>
-      </Box>
       <TableContainer
         sx={{
           width: '100%',
@@ -422,3 +409,7 @@ export default function IndicatorTable() {
 }
 
 OrderTableHead.propTypes = { order: PropTypes.any, orderBy: PropTypes.string };
+
+IndicatorTable.propTypes = {
+  selectedCrypto: PropTypes.string.isRequired
+};

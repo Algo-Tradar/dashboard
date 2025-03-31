@@ -141,19 +141,20 @@ ChangeValue.propTypes = {
 };
 
 // Main component for the entity table
-export default function EntityTable() {
+export default function EntityTable({ selectedCrypto }) {
   const [entityData, setEntityData] = useState({
     ETFs: {},
     CEX: {},
     Companies: {}
   });
 
-  // Effect hook to fetch data and update state
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const cryptoSymbol = selectedCrypto.replace('USDT', '');
+        
         // Attempt to fetch data from the API
-        const response = await fetchFromApi('/api/entities');
+        const response = await fetchFromApi(`/api/entities/${cryptoSymbol}`);
         console.log('API Response:', response);
         setEntityData(response.Entities || {
           ETFs: {},
@@ -167,16 +168,17 @@ export default function EntityTable() {
         const backupData = await fetchFromJson();
         console.log('Backup Data:', backupData);
         if (backupData && backupData.crypto_data) {
-          // Access the correct level of the JSON structure
-          const { BTC } = backupData.crypto_data.Entities;
-          console.log('Entities from JSON:', BTC.Entities);
-          setEntityData(BTC.Entities || {
+          // Get the correct crypto data based on selectedCrypto
+          const cryptoSymbol = selectedCrypto.replace('USDT', '');
+          const cryptoData = backupData.crypto_data.Entities[cryptoSymbol];
+          
+          console.log(`Entities from JSON for ${cryptoSymbol}:`, cryptoData?.Entities);
+          setEntityData(cryptoData?.Entities || {
             ETFs: {},
             CEX: {},
             Companies: {}
           });
         } else {
-          // Ensure entityData is always initialized
           setEntityData({
             ETFs: {},
             CEX: {},
@@ -189,7 +191,7 @@ export default function EntityTable() {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedCrypto]); // Add selectedCrypto to dependency array
 
   const renderCategoryTable = (category, entities = {}) => (
     <Table sx={{ mb: 4, tableLayout: 'fixed', width: '100%' }}>
@@ -240,4 +242,8 @@ export default function EntityTable() {
       </TableContainer>
     </Box>
   );
-} 
+}
+
+EntityTable.propTypes = {
+  selectedCrypto: PropTypes.string.isRequired
+}; 

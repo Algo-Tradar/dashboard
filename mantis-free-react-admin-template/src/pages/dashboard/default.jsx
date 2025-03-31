@@ -11,6 +11,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 // project imports
 import MainCard from 'components/MainCard';
@@ -55,6 +57,7 @@ const actionSX = {
 import React, { useState, useEffect } from 'react';
 
 export default function DashboardDefault() {
+  const [selectedCrypto, setSelectedCrypto] = useState('BTCUSDT');
   const [bitcoinPrice, setBitcoinPrice] = useState("Loading...");
   const [bitcoinChange, setBitcoinChange] = useState(0);
   const [ethPrice, setEthPrice] = useState("Loading...");
@@ -160,6 +163,8 @@ export default function DashboardDefault() {
           isLoss={bitcoinChange < 0}
           color={bitcoinChange < 0 ? "error" : "success"}
           extra="Buy"
+          onClick={() => setSelectedCrypto('BTCUSDT')}
+          selected={selectedCrypto === 'BTCUSDT'}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
@@ -170,6 +175,8 @@ export default function DashboardDefault() {
           isLoss={ethChange < 0}
           color={ethChange < 0 ? "error" : "success"}
           extra="Sell"
+          onClick={() => setSelectedCrypto('ETHUSDT')}
+          selected={selectedCrypto === 'ETHUSDT'}
         />
       </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
@@ -180,6 +187,8 @@ export default function DashboardDefault() {
           isLoss={solChange < 0}
           color={solChange < 0 ? "error" : "success"}
           extra="Hold"
+          onClick={() => setSelectedCrypto('SOLUSDT')}
+          selected={selectedCrypto === 'SOLUSDT'}
         />
       </Grid>
 
@@ -216,10 +225,21 @@ export default function DashboardDefault() {
           <Grid>
             <Typography variant="h5">AlgoTradar Indicators</Typography>
           </Grid>
-          <Grid />
+          <Grid>
+            <Select 
+              value={selectedCrypto} 
+              onChange={(e) => setSelectedCrypto(e.target.value)} 
+              variant="outlined" 
+              size="small"
+            >
+              <MenuItem value="BTCUSDT">Bitcoin</MenuItem>
+              <MenuItem value="ETHUSDT">Ethereum</MenuItem>
+              <MenuItem value="SOLUSDT">Solana</MenuItem>
+            </Select>
+          </Grid>
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <IndicatorTable />
+          <IndicatorTable selectedCrypto={selectedCrypto} />
         </MainCard>
       </Grid>
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
@@ -257,7 +277,7 @@ export default function DashboardDefault() {
           <Grid />
         </Grid>
         <MainCard sx={{ mt: 2 }} content={false}>
-          <EntityTable />
+          <EntityTable selectedCrypto={selectedCrypto} />
         </MainCard>
       </Grid>
 

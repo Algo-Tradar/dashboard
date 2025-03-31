@@ -1,67 +1,41 @@
 {
     "indicator_data": {
-        "SOLUSDT": {
-            "knnMovingAverage": "Above",
-            "keltnerChannels": "Middle",
-            "aiTrendNavigator": "Green"
-        },
         "BTCUSDT": {
-            "knnMovingAverage": "Above",
+            "knnMovingAverage": "Below",
             "keltnerChannels": "Middle",
-            "aiTrendNavigator": "Green"
+            "aiTrendNavigator": "Red"
         },
         "ETHUSDT": {
-            "knnMovingAverage": "Above",
+            "knnMovingAverage": "Below",
             "keltnerChannels": "Middle",
-            "aiTrendNavigator": "Green"
+            "aiTrendNavigator": "Red"
         },
-        "signal_history": [
-            {
-                "subtitle": "KNN Moving Average email alert",
-                "description": "Knn MA Signal from Up to Down \ud83d\udd34",
-                "time": "2025-03-26 16:00 (4H)",
-                "price": "86622.71"
-            },
-            {
-                "subtitle": "AI Trend Navigator",
-                "description": "AI Trend Navigator from Up to Down \ud83d\udd34",
-                "time": "2025-03-26 12:00 (4H)",
-                "price": "86793.21"
-            },
-            {
-                "subtitle": "KNN Moving Average email alert",
-                "description": "Knn MA Signal from Down to Up \ud83d\udfe2",
-                "time": "2025-03-25 20:00 (4H)",
-                "price": "87417.01"
-            },
-            {
-                "subtitle": "KNN Moving Average email alert",
-                "description": "Knn MA Signal from Up to Down \ud83d\udd34",
-                "time": "2025-03-25 08:00 (4H)",
-                "price": "87382.49"
-            }
-        ]
+        "SOLUSDT": {
+            "knnMovingAverage": "Below",
+            "keltnerChannels": "Middle",
+            "aiTrendNavigator": "Red"
+        }
     },
     "crypto_data": {
         "Fear-Greed": {
             "BTC": {
                 "Fear-Greed": {
-                    "value": 40,
-                    "change": -14.893617021276595,
+                    "value": 34,
+                    "change": 6.25,
                     "valuation": "Buy"
                 }
             },
             "ETH": {
                 "Fear-Greed": {
-                    "value": 40,
-                    "change": -14.893617021276595,
+                    "value": 34,
+                    "change": 6.25,
                     "valuation": "Buy"
                 }
             },
             "SOL": {
                 "Fear-Greed": {
-                    "value": 40,
-                    "change": -14.893617021276595,
+                    "value": 34,
+                    "change": 6.25,
                     "valuation": "Buy"
                 }
             }
@@ -69,32 +43,32 @@
         "Mining-Cost": {
             "BTC": {
                 "Mining-Cost": {
-                    "cost": 80571.0,
-                    "ratio": 0.92,
-                    "valuation": "Buy"
+                    "cost": 80911.0,
+                    "ratio": 1.01,
+                    "valuation": "Hold"
                 }
             }
         },
         "Distribution": {
             "BTC": {
                 "Distribution": {
-                    "0.001 - 1 BTC": 12.0,
-                    "1 - 10 BTC": 32.0,
-                    "10 - 100 BTC": 56.0,
-                    "100+ BTC": -28.0
+                    "0.001 - 1 BTC": 81.0,
+                    "1 - 10 BTC": 400.0,
+                    "10 - 100 BTC": 1108.0,
+                    "100+ BTC": -1468.0
                 }
             }
         },
         "Google-Trends": {
             "BTC": {
                 "Google-Trends": {
-                    "change": -15.909090909090908,
-                    "valuation": "Hold"
+                    "change": 31.578947368421055,
+                    "valuation": "Sell"
                 }
             },
             "ETH": {
                 "Google-Trends": {
-                    "change": -20.0,
+                    "change": 0.0,
                     "valuation": "Hold"
                 }
             },
@@ -134,7 +108,7 @@
                             "streak": ""
                         },
                         "bitwise": {
-                            "change": "-115 (*-0.30%*)",
+                            "change": "",
                             "streak": ""
                         }
                     },
@@ -162,7 +136,7 @@
                     },
                     "Companies": {
                         "microstrategy": {
-                            "change": "hold",
+                            "change": "-7,383 (*-2.23%*)",
                             "streak": ""
                         },
                         "worldliberty": {
@@ -196,7 +170,7 @@
                             "streak": ""
                         },
                         "bitwise": {
-                            "change": "hold",
+                            "change": "",
                             "streak": ""
                         }
                     },
