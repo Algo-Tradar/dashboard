@@ -24,6 +24,7 @@ import UniqueVisitorCard from 'sections/dashboard/default/UniqueVisitorCard';
 import SaleReportCard from 'sections/dashboard/default/SaleReportCard';
 import IndicatorTable from 'sections/dashboard/default/IndicatorTable';
 import EntityTable from 'sections/dashboard/default/EntityTable';
+import EconomicIndicatorTable from 'sections/dashboard/default/EconomicIndicatorTable';
 
 // assets
 import GiftOutlined from '@ant-design/icons/GiftOutlined';
@@ -281,12 +282,21 @@ export default function DashboardDefault() {
         </MainCard>
       </Grid>
 
-      {/* row 4 */}
-      {/* <Grid size={{ xs: 12, md: 7, lg: 8 }}>
-        <SaleReportCard />
-      </Grid> */}
+      {/* Economic Calendar and Signal History Column */}
       <Grid size={{ xs: 12, md: 5, lg: 4 }}>
+        {/* Economic Calendar */}
         <Grid container alignItems="center" justifyContent="space-between">
+          <Grid>
+            <Typography variant="h5">Economic Calendar</Typography>
+          </Grid>
+          <Grid />
+        </Grid>
+        <MainCard sx={{ mt: 2 }} content={false}>
+          <EconomicIndicatorTable />
+        </MainCard>
+
+        {/* Signal History */}
+        <Grid container alignItems="center" justifyContent="space-between" sx={{ mt: 2 }}>
           <Grid>
             <Typography variant="h5">Signal History</Typography>
           </Grid>

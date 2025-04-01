@@ -325,6 +325,44 @@ def get_crypto_data(column_name, crypto='BTC'):
         if connection:
             connection.close()
 
+@app.route('/api/economic-indicators', methods=['GET'])
+def get_economic_indicators():
+    """Endpoint to get economic indicators from the database and save to backup"""
+    try:
+        connection = connect_to_database()
+        if not connection:
+            return jsonify({"error": "Database connection failed"}), 500
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    DATE_FORMAT(date, '%Y-%m-%d') as date,
+                    TIME_FORMAT(time, '%H:%i') as time,
+                    event_name,
+                    actual_value,
+                    previous_value,
+                    consensus_value,
+                    forecast_value
+                FROM economic_indicators 
+                ORDER BY date ASC, time ASC
+            """)
+            indicators = cursor.fetchall()
+
+            # Update the indicator_data dictionary
+            indicator_data['economic_indicators'] = indicators
+            
+            # Save to backup file
+            save_data_to_json()
+
+            return jsonify(indicators), 200
+
+    except Exception as e:
+        print(f"Error fetching economic indicators: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+    finally:
+        if connection:
+            connection.close()
+
 def verify_database_setup():
     """Verify database setup and print table structure"""
     connection = None
@@ -365,18 +403,67 @@ def save_data_to_json():
         # Get the absolute path for the backup file
         absolute_backup_path = os.path.abspath(BACKUP_FILE_PATH)
         print(f"Attempting to save data to {absolute_backup_path}...")  # Debug: Print absolute file path
+        
         # Ensure the directory exists
         os.makedirs(os.path.dirname(absolute_backup_path), exist_ok=True)
-        # Test writing a simple string to the file
-        with open(absolute_backup_path, 'w') as test_file:
-            test_file.write("Test write operation\n")
-        print("Test write operation successful.")
-        # Now write the actual data
+        
+        # Initialize default structure
+        default_data = {
+            "indicator_data": {
+                "BTCUSDT": {},
+                "ETHUSDT": {},
+                "SOLUSDT": {},
+                "economic_indicators": [],
+                "signal_history": []
+            },
+            "crypto_data": {
+                "Fear-Greed": {},
+                "Mining-Cost": {},
+                "Distribution": {},
+                "Google-Trends": {},
+                "Order-Book": {},
+                "Entities": {}
+            }
+        }
+        
+        # Read existing backup data if it exists and is not empty
+        try:
+            with open(absolute_backup_path, 'r') as existing_file:
+                content = existing_file.read().strip()
+                if content:  # Only try to parse if file is not empty
+                    existing_data = json.loads(content)
+                else:
+                    existing_data = default_data
+        except (FileNotFoundError, json.JSONDecodeError):
+            existing_data = default_data
+        
+        # Update indicator_data while preserving existing data
+        if "indicator_data" not in existing_data:
+            existing_data["indicator_data"] = default_data["indicator_data"]
+        
+        # Update each key in indicator_data separately
+        for key, value in indicator_data.items():
+            if key not in existing_data["indicator_data"]:
+                existing_data["indicator_data"][key] = value
+            elif isinstance(value, list):
+                existing_data["indicator_data"][key] = value
+            else:
+                existing_data["indicator_data"][key].update(value)
+        
+        # Update crypto_data while preserving existing data
+        if "crypto_data" not in existing_data:
+            existing_data["crypto_data"] = default_data["crypto_data"]
+        
+        # Update each key in crypto_data separately
+        for key, value in crypto_data.items():
+            if key not in existing_data["crypto_data"]:
+                existing_data["crypto_data"][key] = value
+            else:
+                existing_data["crypto_data"][key].update(value)
+        
+        # Write the updated data back to the file
         with open(absolute_backup_path, 'w') as backup_file:
-            json.dump({
-                'indicator_data': indicator_data,
-                'crypto_data': crypto_data
-            }, backup_file, indent=4)
+            json.dump(existing_data, backup_file, indent=4)
         print("Data successfully backed up to JSON.")
     except Exception as e:
         print(f"Error saving data to JSON: {e}")
