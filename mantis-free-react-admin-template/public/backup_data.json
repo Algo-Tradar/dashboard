@@ -135,28 +135,21 @@
                 "cost": 81330.0,
                 "ratio": 1.04,
                 "valuation": "Hold"
-            },
-            "BTC": {
-                "Mining-Cost": {
-                    "cost": 81330.0,
-                    "ratio": 1.04,
-                    "valuation": "Hold"
-                }
             }
         },
         "Distribution": {
             "BTC": {
                 "Distribution": {
-                    "0.001 - 1 BTC": 31.0,
-                    "1 - 10 BTC": -160.0,
-                    "10 - 100 BTC": -279.0,
-                    "100+ BTC": 477.0
+                    "0.001 - 1 BTC": -4.0,
+                    "1 - 10 BTC": -200.0,
+                    "10 - 100 BTC": -42.0,
+                    "100+ BTC": 393.0
                 }
             }
         },
         "Google-Trends": {
             "Google-Trends": {
-                "change": -16.000000000000007,
+                "change": -2.040816326530605,
                 "valuation": "Hold"
             }
         },
@@ -226,68 +219,6 @@
                     "usg": {
                         "change": "",
                         "streak": ""
-                    }
-                }
-            },
-            "BTC": {
-                "Entities": {
-                    "ETFs": {
-                        "blackrock": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "fidelity": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "grayscale": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "ark": {
-                            "change": "-279 (*-0.58%*)",
-                            "streak": "13d (*-1.79%*)"
-                        },
-                        "bitwise": {
-                            "change": "-240 (*-0.63%*)",
-                            "streak": "28d (*-7.48%*)"
-                        }
-                    },
-                    "CEX": {
-                        "binance": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "coinbase": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "bitfinex": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "kraken": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "robinhood": {
-                            "change": "",
-                            "streak": ""
-                        }
-                    },
-                    "Companies": {
-                        "microstrategy": {
-                            "change": "hold",
-                            "streak": ""
-                        },
-                        "worldliberty": {
-                            "change": "",
-                            "streak": ""
-                        },
-                        "usg": {
-                            "change": "",
-                            "streak": ""
-                        }
                     }
                 }
             }

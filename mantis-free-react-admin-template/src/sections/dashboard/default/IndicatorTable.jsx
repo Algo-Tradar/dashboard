@@ -250,33 +250,39 @@ export default function IndicatorTable({ selectedCrypto }) {
           setAiTrendNavigator(selectedIndicators.aiTrendNavigator || 'N/A');
 
           // Process Fear & Greed data from JSON
-          const fearGreed = crypto_data['Fear-Greed'][cryptoSymbol];
-          console.log('Fear & Greed Data:', fearGreed);
-          if (fearGreed) {
-            const { value, change, valuation } = fearGreed['Fear-Greed'];
-            console.log('Setting Fear & Greed Value:', change.toFixed(2), 'Status:', valuation);
-            setFearGreedValue(`${change.toFixed(2)}%`);
-            setFearGreedStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+          if (crypto_data['Fear-Greed'] && crypto_data['Fear-Greed']['Fear-Greed']) {
+            const fearGreedData = crypto_data['Fear-Greed']['Fear-Greed'];
+            console.log('Fear & Greed Data:', fearGreedData);
+            if (fearGreedData) {
+              const { value, change, valuation } = fearGreedData;
+              console.log('Setting Fear & Greed Value:', change.toFixed(2), 'Status:', valuation);
+              setFearGreedValue(`${change.toFixed(2)}%`);
+              setFearGreedStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+            }
           }
 
           // Process Mining Cost data from JSON
-          const miningCost = crypto_data['Mining-Cost'][cryptoSymbol];
-          console.log('Mining Cost Data:', miningCost);
-          if (miningCost) {
-            const { ratio, valuation } = miningCost['Mining-Cost'];
-            console.log('Setting Mining Cost Value:', ratio.toFixed(2), 'Status:', valuation);
-            setMiningCostValue(ratio.toFixed(2));
-            setMiningCostStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+          if (crypto_data['Mining-Cost'] && crypto_data['Mining-Cost']['Mining-Cost']) {
+            const miningCostData = crypto_data['Mining-Cost']['Mining-Cost'];
+            console.log('Mining Cost Data:', miningCostData);
+            if (miningCostData) {
+              const { ratio, valuation } = miningCostData;
+              console.log('Setting Mining Cost Value:', ratio.toFixed(2), 'Status:', valuation);
+              setMiningCostValue(ratio.toFixed(2));
+              setMiningCostStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+            }
           }
 
           // Process Google Trends data from JSON
-          const googleTrends = crypto_data['Google-Trends'][cryptoSymbol];
-          console.log('Google Trends Data:', googleTrends);
-          if (googleTrends) {
-            const { change, valuation } = googleTrends['Google-Trends'];
-            console.log('Setting Google Trends Value:', change.toFixed(2), 'Status:', valuation);
-            setGoogleTrendsValue(`${change.toFixed(2)}%`);
-            setGoogleTrendsStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+          if (crypto_data['Google-Trends'] && crypto_data['Google-Trends']['Google-Trends']) {
+            const googleTrendsData = crypto_data['Google-Trends']['Google-Trends'];
+            console.log('Google Trends Data:', googleTrendsData);
+            if (googleTrendsData) {
+              const { change, valuation } = googleTrendsData;
+              console.log('Setting Google Trends Value:', change.toFixed(2), 'Status:', valuation);
+              setGoogleTrendsValue(`${change.toFixed(2)}%`);
+              setGoogleTrendsStatus(valuation === 'Buy' ? 1 : valuation === 'Sell' ? 2 : 0);
+            }
           }
         }
       }

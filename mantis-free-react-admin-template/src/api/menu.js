@@ -11,41 +11,21 @@ const endpoints = {
   dashboard: '/dashboard' // server URL
 };
 
-const fetcher = async (url) => {
-  const response = await fetch(url);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message);
-  }
-
-  return data;
-};
-
 export function useGetMenuMaster() {
-  try {
-    const { data, error, isLoading } = useSWR('/api/menu', fetcher, {
-      revalidateOnFocus: false,
-    });
+  const { data, error, isLoading } = useSWR(endpoints.key + endpoints.master, {
+    fallbackData: initialState,
+    revalidateOnFocus: false,
+  });
 
-    return {
-      menuMaster: data,
-      isLoading,
-      isError: error,
-    };
-  } catch (error) {
-    console.error('Error in useGetMenuMaster:', error);
-    return {
-      menuMaster: null,
-      isLoading: false,
-      isError: true,
-    };
-  }
+  return {
+    menuMaster: data || initialState,
+    isLoading,
+    isError: error,
+  };
 }
 
 export function handlerDrawerOpen(isDashboardDrawerOpened) {
   // to update local state based on key
-
   mutate(
     endpoints.key + endpoints.master,
     (currentMenuMaster) => {

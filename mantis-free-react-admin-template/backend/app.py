@@ -18,6 +18,11 @@ load_dotenv()
 # Initialize the Flask application
 app = Flask(__name__)
 
+# Disable auto-reloading and disable debug mode
+app.config['ENV'] = 'production'
+app.config['DEBUG'] = False
+app.config['TESTING'] = False
+
 # Enable Cross-Origin Resource Sharing (CORS) for the app
 CORS(app)
 
@@ -613,6 +618,6 @@ if __name__ == '__main__':
             print("No alerts found")
         print("\nStarting server...")
         print("Server will be accessible at http://localhost:5002")
-        app.run(debug=False, host='0.0.0.0', port=5002)
+        app.run(debug=False, host='0.0.0.0', port=5002, use_reloader=False)
     else:
         print("\nDatabase verification failed! Please check your database setup.") 

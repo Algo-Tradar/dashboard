@@ -167,13 +167,20 @@ export default function EntityTable({ selectedCrypto }) {
         // Fallback to JSON data
         const backupData = await fetchFromJson();
         console.log('Backup Data:', backupData);
-        if (backupData && backupData.crypto_data) {
-          // Get the correct crypto data based on selectedCrypto
-          const cryptoSymbol = selectedCrypto.replace('USDT', '');
-          const cryptoData = backupData.crypto_data.Entities[cryptoSymbol];
+        if (backupData && backupData.crypto_data && backupData.crypto_data.Entities) {
+          // First try to get specific crypto entities
+          let entities;
           
-          console.log(`Entities from JSON for ${cryptoSymbol}:`, cryptoData?.Entities);
-          setEntityData(cryptoData?.Entities || {
+          if (backupData.crypto_data.Entities[cryptoSymbol] && 
+              backupData.crypto_data.Entities[cryptoSymbol].Entities) {
+            entities = backupData.crypto_data.Entities[cryptoSymbol].Entities;
+          } else if (backupData.crypto_data.Entities.Entities) {
+            // Fallback to general entities
+            entities = backupData.crypto_data.Entities.Entities;
+          }
+          
+          console.log('Entities from backup data:', entities);
+          setEntityData(entities || {
             ETFs: {},
             CEX: {},
             Companies: {}
