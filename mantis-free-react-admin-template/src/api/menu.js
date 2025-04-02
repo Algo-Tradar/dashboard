@@ -11,22 +11,36 @@ const endpoints = {
   dashboard: '/dashboard' // server URL
 };
 
+const fetcher = async (url) => {
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message);
+  }
+
+  return data;
+};
+
 export function useGetMenuMaster() {
-  const { data, isLoading } = useSWR(endpoints.key + endpoints.master, () => initialState, {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false
-  });
+  try {
+    const { data, error, isLoading } = useSWR('/api/menu', fetcher, {
+      revalidateOnFocus: false,
+    });
 
-  const memoizedValue = useMemo(
-    () => ({
+    return {
       menuMaster: data,
-      menuMasterLoading: isLoading
-    }),
-    [data, isLoading]
-  );
-
-  return memoizedValue;
+      isLoading,
+      isError: error,
+    };
+  } catch (error) {
+    console.error('Error in useGetMenuMaster:', error);
+    return {
+      menuMaster: null,
+      isLoading: false,
+      isError: true,
+    };
+  }
 }
 
 export function handlerDrawerOpen(isDashboardDrawerOpened) {

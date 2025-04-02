@@ -128,13 +128,6 @@
                 "value": 44,
                 "change": 29.411764705882355,
                 "valuation": "Buy"
-            },
-            "BTC": {
-                "Fear-Greed": {
-                    "value": 44,
-                    "change": 29.411764705882355,
-                    "valuation": "Buy"
-                }
             }
         },
         "Mining-Cost": {
