@@ -348,11 +348,11 @@ def get_economic_indicators():
             """)
             indicators = cursor.fetchall()
 
-            # Update the indicator_data dictionary
-            indicator_data['economic_indicators'] = indicators
-            
-            # Save to backup file
-            save_data_to_json()
+            # Only update and save if there are new indicators
+            if indicators and (not indicator_data.get('economic_indicators') or 
+                             indicators != indicator_data['economic_indicators']):
+                indicator_data['economic_indicators'] = indicators
+                save_data_to_json()
 
             return jsonify(indicators), 200
 
@@ -398,11 +398,8 @@ def load_initial_data():
 def save_data_to_json():
     """Save current data to a JSON file for backup."""
     try:
-        # Print the current working directory
-        print(f"Current working directory: {os.getcwd()}")  # Debug: Print current working directory
         # Get the absolute path for the backup file
         absolute_backup_path = os.path.abspath(BACKUP_FILE_PATH)
-        print(f"Attempting to save data to {absolute_backup_path}...")  # Debug: Print absolute file path
         
         # Ensure the directory exists
         os.makedirs(os.path.dirname(absolute_backup_path), exist_ok=True)
@@ -464,7 +461,6 @@ def save_data_to_json():
         # Write the updated data back to the file
         with open(absolute_backup_path, 'w') as backup_file:
             json.dump(existing_data, backup_file, indent=4)
-        print("Data successfully backed up to JSON.")
     except Exception as e:
         print(f"Error saving data to JSON: {e}")
 
@@ -503,7 +499,9 @@ def fetch_signal_history_from_gmail():
 # API Routes
 @app.route('/api/indicators', methods=['GET'])
 def get_indicators():
-    save_data_to_json()  # Save data when accessed
+    # Only save if there's new data
+    if indicator_data:
+        save_data_to_json()
     return jsonify({'indicator_data': indicator_data})
 
 @app.route('/api/update_indicators', methods=['POST'])
@@ -513,8 +511,10 @@ def update_indicators():
         if not new_data:
             return jsonify({"error": "No data provided"}), 400
             
-        indicator_data.update(new_data)
-        save_data_to_json()  # Save data after updating
+        # Only update and save if there's new data
+        if new_data != indicator_data:
+            indicator_data.update(new_data)
+            save_data_to_json()
         return jsonify({"message": "Success", "data": indicator_data})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -524,42 +524,54 @@ def update_indicators():
 @app.route('/api/distribution/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_distribution(crypto):
     result, status_code = get_crypto_data('Distribution', crypto)
-    save_data_to_json()  # Save data when accessed
+    if status_code == 200 and result != crypto_data['Distribution']:
+        crypto_data['Distribution'] = result
+        save_data_to_json()
     return jsonify(result), status_code
 
 @app.route('/api/google-trends/<crypto>', methods=['GET'])
 @app.route('/api/google-trends/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_google_trends(crypto):
     result, status_code = get_crypto_data('Google-Trends', crypto)
-    save_data_to_json()  # Save data when accessed
+    if status_code == 200 and result != crypto_data['Google-Trends']:
+        crypto_data['Google-Trends'] = result
+        save_data_to_json()
     return jsonify(result), status_code
 
 @app.route('/api/fear-greed/<crypto>', methods=['GET'])
 @app.route('/api/fear-greed/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_fear_greed(crypto):
     result, status_code = get_crypto_data('Fear-Greed', crypto)
-    save_data_to_json()  # Save data when accessed
+    if status_code == 200 and result != crypto_data['Fear-Greed']:
+        crypto_data['Fear-Greed'] = result
+        save_data_to_json()
     return jsonify(result), status_code
 
 @app.route('/api/mining-cost/<crypto>', methods=['GET'])
 @app.route('/api/mining-cost/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_mining_cost(crypto):
     result, status_code = get_crypto_data('Mining-Cost', crypto)
-    save_data_to_json()  # Save data when accessed
+    if status_code == 200 and result != crypto_data['Mining-Cost']:
+        crypto_data['Mining-Cost'] = result
+        save_data_to_json()
     return jsonify(result), status_code
 
 @app.route('/api/order-book/<crypto>', methods=['GET'])
 @app.route('/api/order-book/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_order_book(crypto):
     result, status_code = get_crypto_data('Order-Book', crypto)
-    save_data_to_json()  # Save data when accessed
+    if status_code == 200 and result != crypto_data['Order-Book']:
+        crypto_data['Order-Book'] = result
+        save_data_to_json()
     return jsonify(result), status_code
 
 @app.route('/api/entities/<crypto>', methods=['GET'])
 @app.route('/api/entities/', defaults={'crypto': 'BTC'}, methods=['GET'])
 def get_entities(crypto):
     result, status_code = get_crypto_data('Entities', crypto)
-    save_data_to_json()  # Save data when accessed
+    if status_code == 200 and result != crypto_data['Entities']:
+        crypto_data['Entities'] = result
+        save_data_to_json()
     return jsonify(result), status_code
 
 @app.route('/api/check_alerts', methods=['GET'])
@@ -567,8 +579,10 @@ def check_alerts():
     """Endpoint to manually check for new alerts"""
     alerts = get_alerts()
     if alerts:
-        indicator_data.update(alerts)
-        save_data_to_json()  # Save data after updating
+        # Only update and save if there are new alerts
+        if alerts != indicator_data:
+            indicator_data.update(alerts)
+            save_data_to_json()
         return jsonify({"message": "Alerts updated", "data": alerts})
     return jsonify({"message": "No new alerts found"})
 
@@ -577,10 +591,10 @@ def get_signal_history():
     """Endpoint to get signal history from Gmail and save to backup_data.json."""
     signal_history_list = fetch_signal_history_from_gmail()
     if signal_history_list:
-        # Assuming signal history should be part of indicator_data
-        indicator_data['signal_history'] = signal_history_list
-        print(f"Final indicator_data before saving: {json.dumps(indicator_data, indent=4)}")  # Debug: Print final state of indicator_data
-        save_data_to_json()  # Save data after updating indicator_data
+        # Only update and save if there are new signals
+        if not indicator_data.get('signal_history') or signal_history_list != indicator_data['signal_history']:
+            indicator_data['signal_history'] = signal_history_list
+            save_data_to_json()
         return jsonify(signal_history_list), 200
     return jsonify([]), 404
 
